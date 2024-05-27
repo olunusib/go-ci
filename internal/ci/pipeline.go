@@ -7,13 +7,15 @@ import (
 )
 
 type Step struct {
-	Name    string `yaml:"name"`
-	Command string `yaml:"command"`
+	Name    string            `yaml:"name"`
+	Command string            `yaml:"command"`
+	Env     map[string]string `yaml:"env,omitempty"`
 }
 
 type Config struct {
-	Name  string `yaml:"name"`
-	Steps []Step `yaml:"steps"`
+	Name  string            `yaml:"name"`
+	Env   map[string]string `yaml:"env,omitempty"`
+	Steps []Step            `yaml:"steps"`
 }
 
 func LoadConfig(filePath string) (*Config, error) {

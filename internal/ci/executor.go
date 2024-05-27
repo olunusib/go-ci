@@ -3,14 +3,19 @@ package ci
 import (
 	"bytes"
 	"log"
+	"os"
 	"os/exec"
 )
 
 func ExecutePipeline(pipelineConfig *Config) error {
 	log.Printf("Starting to work on: %s", pipelineConfig.Name)
 
+	for key, value := range pipelineConfig.Env {
+		os.Setenv(key, value)
+	}
+
 	for _, step := range pipelineConfig.Steps {
-		if err := runStep(step); err != nil {
+		if err := runStep(step, pipelineConfig.Env); err != nil {
 			return err
 		}
 	}
@@ -19,8 +24,13 @@ func ExecutePipeline(pipelineConfig *Config) error {
 	return nil
 }
 
-func runStep(step Step) error {
+func runStep(step Step, globalEnv map[string]string) error {
 	log.Printf("Running step: %s", step.Name)
+
+	for key, value := range step.Env {
+		os.Setenv(key, value)
+	}
+
 	var stdout, stderr bytes.Buffer
 	cmd := exec.Command("sh", "-c", step.Command)
 	cmd.Stdout = &stdout
@@ -33,5 +43,10 @@ func runStep(step Step) error {
 	if err != nil {
 		log.Printf("Step %s failed: %v", step.Name, err)
 	}
+
+	for key := range step.Env {
+		os.Unsetenv(key)
+	}
+
 	return err
 }

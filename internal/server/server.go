@@ -52,7 +52,12 @@ func webhookHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) 
 		processWebhook(payload, cfg)
 	}()
 
+	response := map[string]string{"message": "Webhook received"}
+	responseJSON, _ := json.Marshal(response)
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(responseJSON)
 }
 
 func cloneRepository(url, path, token string) error {
@@ -75,6 +80,8 @@ func processWebhook(payload WebhookPayload, cfg *config.Config) {
 		log.Printf("Error while creating temp directory: %v", err)
 		return
 	}
+
+	defer os.RemoveAll(repoPath)
 
 	pipelineFilePath := filepath.Join(repoPath, "ci", "pipeline.yaml")
 

@@ -15,7 +15,7 @@ func ExecutePipeline(pipelineConfig *Config) error {
 	}
 
 	for _, step := range pipelineConfig.Steps {
-		if err := runStep(step, pipelineConfig.Env); err != nil {
+		if err := runStep(step); err != nil {
 			return err
 		}
 	}
@@ -24,7 +24,7 @@ func ExecutePipeline(pipelineConfig *Config) error {
 	return nil
 }
 
-func runStep(step Step, globalEnv map[string]string) error {
+func runStep(step Step) error {
 	log.Printf("Running step: %s", step.Name)
 
 	for key, value := range step.Env {

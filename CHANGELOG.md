@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/olunusib/go-ci/compare/v1.1.0...v1.1.1) (2024-05-28)
+
+
+### Miscellaneous Chores
+
+* release 1.1.1 ([61a557f](https://github.com/olunusib/go-ci/commit/61a557f6ae5eb5dcfe3a32f92fc67b8e7544ca47))
+
 ## [1.1.0](https://github.com/olunusib/go-ci/compare/v1.0.0...v1.1.0) (2024-05-28)
 
 

@@ -8,10 +8,9 @@ import (
 	"github.com/olunusib/go-ci/internal/ci"
 	"github.com/olunusib/go-ci/internal/config"
 
-	gitHTTP "github.com/go-git/go-git/v5/plumbing/transport/http"
-
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	gitHTTP "github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
 func processWebhook(payload WebhookPayload, cfg *config.Config) {
@@ -19,56 +18,61 @@ func processWebhook(payload WebhookPayload, cfg *config.Config) {
 		Token: cfg.GITHUB_TOKEN,
 	}
 
-	// this should be the actual URL of your CI/CD job page
+	// This should be the actual URL of your CI/CD job page
 	targetURL := "https://go-ci.example.com"
 
 	githubClient.SetCommitStatus(payload, "pending", "Processing your request", targetURL)
 
-	repoURL := payload.Repository.CloneURL
-	repoPath, err := os.MkdirTemp("/tmp", "")
+	repoPath, err := createTempDir()
 	if err != nil {
 		log.Printf("Error while creating temp directory: %v", err)
 		githubClient.SetCommitStatus(payload, "failure", "Failed to create temp directory", targetURL)
 		return
 	}
-
 	defer os.RemoveAll(repoPath)
 
-	pipelineFilePath := filepath.Join(repoPath, "ci", "pipeline.yaml")
+	pipelineFilePath, err := getPipelineFilePath(repoPath)
+	if err != nil {
+		log.Printf("No pipeline configuration file found")
+		return
+	}
 
 	branch := payload.Ref
-
+	repoURL := payload.Repository.CloneURL
 	log.Printf("Cloning the repo: %s on branch %s", repoURL, branch)
 
-	err = cloneRepository(repoURL, repoPath, cfg.GITHUB_TOKEN, branch)
-	if err != nil {
+	if err := cloneRepository(repoURL, repoPath, cfg.GITHUB_TOKEN, branch); err != nil {
 		log.Printf("Error while cloning repo: %v", err)
 		githubClient.SetCommitStatus(payload, "failure", "Failed to clone repository", targetURL)
 		return
 	}
 
-	err = os.Chdir(repoPath)
-	if err != nil {
+	if err := changeWorkingDir(repoPath); err != nil {
 		log.Printf("Error while switching working dir: %v", err)
 		githubClient.SetCommitStatus(payload, "failure", "Failed to switch working directory", targetURL)
 		return
 	}
 
-	pipelineConfig, err := ci.LoadConfig(pipelineFilePath)
-	if err != nil {
-		log.Printf("Error while loading pipeline config: %v", err)
-		githubClient.SetCommitStatus(payload, "failure", "Failed to load pipeline config", targetURL)
-		return
-	}
-
-	err = ci.ExecutePipeline(pipelineConfig)
-	if err != nil {
+	if err := loadAndExecutePipeline(pipelineFilePath); err != nil {
 		log.Printf("Pipeline execution failed: %v", err)
 		githubClient.SetCommitStatus(payload, "failure", "Pipeline execution failed", targetURL)
 		return
 	}
 
 	githubClient.SetCommitStatus(payload, "success", "Processing complete", targetURL)
+}
+
+func createTempDir() (string, error) {
+	return os.MkdirTemp("/tmp", "")
+}
+
+func getPipelineFilePath(repoPath string) (string, error) {
+	if _, err := os.Stat(filepath.Join(repoPath, "ci", "pipeline.yml")); err == nil {
+		return filepath.Join(repoPath, "ci", "pipeline.yml"), nil
+	} else if _, err := os.Stat(filepath.Join(repoPath, "ci", "pipeline.yaml")); err == nil {
+		return filepath.Join(repoPath, "ci", "pipeline.yaml"), nil
+	}
+	return "", os.ErrNotExist
 }
 
 func cloneRepository(url, path, token, branch string) error {
@@ -83,4 +87,16 @@ func cloneRepository(url, path, token, branch string) error {
 		Progress:      os.Stdout,
 	})
 	return err
+}
+
+func changeWorkingDir(path string) error {
+	return os.Chdir(path)
+}
+
+func loadAndExecutePipeline(pipelineFilePath string) error {
+	pipelineConfig, err := ci.LoadConfig(pipelineFilePath)
+	if err != nil {
+		return err
+	}
+	return ci.ExecutePipeline(pipelineConfig)
 }

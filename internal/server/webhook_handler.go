@@ -33,9 +33,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) 
 		return
 	}
 
-	go func() {
-		processWebhook(payload, cfg)
-	}()
+	go processWebhook(payload, cfg)
 
 	response := map[string]string{"message": "Webhook received"}
 	responseJSON, _ := json.Marshal(response)

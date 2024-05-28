@@ -25,6 +25,23 @@ func (client *GitHubClient) SetCommitStatus(payload WebhookPayload, state, descr
 		return
 	}
 
+	status, err := client.constructStatusPayload(state, description, targetURL)
+	if err != nil {
+		log.Printf("Error constructing status payload: %v", err)
+		return
+	}
+
+	url := client.constructStatusURL(payload)
+	req, err := client.constructStatusRequest(url, status)
+	if err != nil {
+		log.Printf("Error constructing status request: %v", err)
+		return
+	}
+
+	client.sendStatusRequest(req)
+}
+
+func (client *GitHubClient) constructStatusPayload(state, description, targetURL string) ([]byte, error) {
 	status := GitHubStatus{
 		State:       state,
 		Description: description,
@@ -34,26 +51,30 @@ func (client *GitHubClient) SetCommitStatus(payload WebhookPayload, state, descr
 
 	statusJSON, err := json.Marshal(status)
 	if err != nil {
-		log.Printf("Error marshaling status JSON: %v", err)
-		return
+		return nil, err
 	}
 
+	return statusJSON, nil
+}
+
+func (client *GitHubClient) constructStatusURL(payload WebhookPayload) string {
 	repo := payload.Repository.FullName
 	commitSHA := payload.HeadCommit.ID
+	return fmt.Sprintf("https://api.github.com/repos/%s/statuses/%s", repo, commitSHA)
+}
 
-	log.Printf("Setting commit status for %s", commitSHA)
-
-	url := fmt.Sprintf("https://api.github.com/repos/%s/statuses/%s", repo, commitSHA)
-
+func (client *GitHubClient) constructStatusRequest(url string, statusJSON []byte) (*http.Request, error) {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(statusJSON))
 	if err != nil {
-		log.Printf("Error creating request: %v", err)
-		return
+		return nil, err
 	}
 
 	req.Header.Set("Authorization", "token "+client.Token)
 	req.Header.Set("Content-Type", "application/json")
+	return req, nil
+}
 
+func (client *GitHubClient) sendStatusRequest(req *http.Request) {
 	clientHTTP := &http.Client{}
 	resp, err := clientHTTP.Do(req)
 	if err != nil {

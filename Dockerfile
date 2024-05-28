@@ -10,7 +10,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
 
-FROM scratch
+FROM alpine:3.20
 
 COPY --from=builder /app/server .
 

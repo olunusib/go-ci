@@ -31,12 +31,6 @@ func processWebhook(payload WebhookPayload, cfg *config.Config) {
 	}
 	defer os.RemoveAll(repoPath)
 
-	pipelineFilePath, err := getPipelineFilePath(repoPath)
-	if err != nil {
-		log.Printf("No pipeline configuration file found")
-		return
-	}
-
 	branch := payload.Ref
 	repoURL := payload.Repository.CloneURL
 	log.Printf("Cloning the repo: %s on branch %s", repoURL, branch)
@@ -53,6 +47,12 @@ func processWebhook(payload WebhookPayload, cfg *config.Config) {
 		return
 	}
 
+	pipelineFilePath, err := getPipelineFilePath()
+	if err != nil {
+		log.Printf("No pipeline configuration file found")
+		return
+	}
+
 	if err := loadAndExecutePipeline(pipelineFilePath); err != nil {
 		log.Printf("Pipeline execution failed: %v", err)
 		githubClient.SetCommitStatus(payload, "failure", "Pipeline execution failed", targetURL)
@@ -66,12 +66,18 @@ func createTempDir() (string, error) {
 	return os.MkdirTemp("/tmp", "")
 }
 
-func getPipelineFilePath(repoPath string) (string, error) {
-	if _, err := os.Stat(filepath.Join(repoPath, "ci", "pipeline.yml")); err == nil {
-		return filepath.Join(repoPath, "ci", "pipeline.yml"), nil
-	} else if _, err := os.Stat(filepath.Join(repoPath, "ci", "pipeline.yaml")); err == nil {
-		return filepath.Join(repoPath, "ci", "pipeline.yaml"), nil
+func getPipelineFilePath() (string, error) {
+	possiblePaths := []string{
+		filepath.Join("ci", "pipeline.yml"),
+		filepath.Join("ci", "pipeline.yaml"),
 	}
+
+	for _, path := range possiblePaths {
+		if _, err := os.Stat(path); err == nil {
+			return path, nil
+		}
+	}
+
 	return "", os.ErrNotExist
 }
 

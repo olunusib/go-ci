@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/olunusib/go-ci/compare/v1.3.0...v1.3.1) (2024-05-29)
+
+
+### Bug Fixes
+
+* use correct port ([776713c](https://github.com/olunusib/go-ci/commit/776713c113529fae610a2d22548e3bbe4fbdb8a1))
+
 ## [1.3.0](https://github.com/olunusib/go-ci/compare/v1.2.0...v1.3.0) (2024-05-29)
 
 

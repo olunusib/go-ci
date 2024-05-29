@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/olunusib/go-ci/compare/v1.1.1...v1.1.2) (2024-05-29)
+
+
+### Bug Fixes
+
+* get pipeline path after repo clone ([df49ad5](https://github.com/olunusib/go-ci/commit/df49ad5e881276f2e856eda5b8d70e1b40e594a9))
+
 ## [1.1.1](https://github.com/olunusib/go-ci/compare/v1.1.0...v1.1.1) (2024-05-28)
 
 

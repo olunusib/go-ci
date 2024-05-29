@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/olunusib/go-ci/compare/v1.2.0...v1.3.0) (2024-05-29)
+
+
+### Features
+
+* do not require port in server_base_url ([c9b4025](https://github.com/olunusib/go-ci/commit/c9b4025a66a3e6d51a7115bf8aad6a9febec1e39))
+
 ## [1.2.0](https://github.com/olunusib/go-ci/compare/v1.1.3...v1.2.0) (2024-05-29)
 
 

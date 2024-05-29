@@ -2,12 +2,34 @@ package ci
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
-func ExecutePipeline(pipelineConfig *Config) error {
+func ExecutePipeline(pipelineConfig *Config, runID string) (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("error getting user home directory: %w", err)
+	}
+
+	logDir := filepath.Join(homeDir, "ci-logs")
+	err = os.MkdirAll(logDir, os.ModePerm)
+	if err != nil {
+		return "", fmt.Errorf("error creating log directory: %w", err)
+	}
+
+	logFilePath := filepath.Join(logDir, fmt.Sprintf("%s.log", runID))
+	logFile, err := os.Create(logFilePath)
+	if err != nil {
+		return "", fmt.Errorf("error creating log file: %w", err)
+	}
+	defer logFile.Close()
+
+	log.SetOutput(logFile)
+
 	log.Printf("Starting to work on: %s", pipelineConfig.Name)
 
 	for key, value := range pipelineConfig.Env {
@@ -16,12 +38,12 @@ func ExecutePipeline(pipelineConfig *Config) error {
 
 	for _, step := range pipelineConfig.Steps {
 		if err := runStep(step); err != nil {
-			return err
+			return runID, err
 		}
 	}
 
 	log.Printf("CI pipeline completed successfully")
-	return nil
+	return runID, nil
 }
 
 func runStep(step Step) error {

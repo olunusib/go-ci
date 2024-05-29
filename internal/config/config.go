@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Port         string
-	GITHUB_TOKEN string
+	PORT            string
+	GITHUB_TOKEN    string
+	SERVER_BASE_URL string
 }
 
 func getEnv(key string) (string, error) {
@@ -29,9 +30,15 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	server_base_url, err := getEnv("SERVER_BASE_URL")
+	if err != nil {
+		return nil, err
+	}
+
 	config := &Config{
-		Port:         port,
-		GITHUB_TOKEN: github_token,
+		PORT:            port,
+		GITHUB_TOKEN:    github_token,
+		SERVER_BASE_URL: server_base_url,
 	}
 
 	return config, nil

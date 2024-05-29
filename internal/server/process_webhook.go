@@ -1,10 +1,12 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/olunusib/go-ci/internal/ci"
 	"github.com/olunusib/go-ci/internal/config"
 
@@ -18,15 +20,17 @@ func processWebhook(payload WebhookPayload, cfg *config.Config) {
 		Token: cfg.GITHUB_TOKEN,
 	}
 
-	// This should be the actual URL of your CI/CD job page
-	targetURL := "https://go-ci.example.com"
+	runID := generateRunID()
+	logURL := fmt.Sprintf("%s/logs/%s", cfg.SERVER_BASE_URL, runID)
 
-	githubClient.SetCommitStatus(payload, "pending", "Processing your request", targetURL)
+	fmt.Println(logURL)
+
+	githubClient.SetCommitStatus(payload, "pending", "Processing your request", logURL)
 
 	repoPath, err := createTempDir()
 	if err != nil {
 		log.Printf("Error while creating temp directory: %v", err)
-		githubClient.SetCommitStatus(payload, "failure", "Failed to create temp directory", targetURL)
+		githubClient.SetCommitStatus(payload, "failure", "Failed to create temp directory", logURL)
 		return
 	}
 	defer os.RemoveAll(repoPath)
@@ -37,29 +41,30 @@ func processWebhook(payload WebhookPayload, cfg *config.Config) {
 
 	if err := cloneRepository(repoURL, repoPath, cfg.GITHUB_TOKEN, branch); err != nil {
 		log.Printf("Error while cloning repo: %v", err)
-		githubClient.SetCommitStatus(payload, "failure", "Failed to clone repository", targetURL)
+		githubClient.SetCommitStatus(payload, "failure", "Failed to clone repository", logURL)
 		return
 	}
 
 	if err := changeWorkingDir(repoPath); err != nil {
 		log.Printf("Error while switching working dir: %v", err)
-		githubClient.SetCommitStatus(payload, "failure", "Failed to switch working directory", targetURL)
+		githubClient.SetCommitStatus(payload, "failure", "Failed to switch working directory", logURL)
 		return
 	}
 
 	pipelineFilePath, err := getPipelineFilePath()
 	if err != nil {
 		log.Printf("No pipeline configuration file found")
+		githubClient.SetCommitStatus(payload, "failure", "No pipeline configuration file found", logURL)
 		return
 	}
 
-	if err := loadAndExecutePipeline(pipelineFilePath); err != nil {
+	if err := loadAndExecutePipeline(pipelineFilePath, runID); err != nil {
 		log.Printf("Pipeline execution failed: %v", err)
-		githubClient.SetCommitStatus(payload, "failure", "Pipeline execution failed", targetURL)
+		githubClient.SetCommitStatus(payload, "failure", "Pipeline execution failed", logURL)
 		return
 	}
 
-	githubClient.SetCommitStatus(payload, "success", "Processing complete", targetURL)
+	githubClient.SetCommitStatus(payload, "success", "Processing complete", logURL)
 }
 
 func createTempDir() (string, error) {
@@ -99,10 +104,15 @@ func changeWorkingDir(path string) error {
 	return os.Chdir(path)
 }
 
-func loadAndExecutePipeline(pipelineFilePath string) error {
+func loadAndExecutePipeline(pipelineFilePath, runID string) error {
 	pipelineConfig, err := ci.LoadConfig(pipelineFilePath)
 	if err != nil {
 		return err
 	}
-	return ci.ExecutePipeline(pipelineConfig)
+	_, err = ci.ExecutePipeline(pipelineConfig, runID)
+	return err
+}
+
+func generateRunID() string {
+	return uuid.New().String()
 }

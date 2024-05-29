@@ -13,7 +13,7 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	port := cfg.Port
+	port := cfg.PORT
 	log.Printf("Starting server on port %s", port)
 	server.StartServer(cfg)
 }

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -33,6 +34,10 @@ func Load() (*Config, error) {
 	server_base_url, err := getEnv("SERVER_BASE_URL")
 	if err != nil {
 		return nil, err
+	}
+
+	if !strings.Contains(server_base_url, ":") {
+		server_base_url = fmt.Sprintf("%s:%s", server_base_url, port)
 	}
 
 	config := &Config{

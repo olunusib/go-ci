@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
-	"strings"
 )
 
 type Config struct {
@@ -36,8 +36,14 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	if !strings.Contains(server_base_url, ":") {
-		server_base_url = fmt.Sprintf("%s:%s", server_base_url, port)
+	parsedURL, err := url.Parse(server_base_url)
+	if err != nil {
+		return nil, fmt.Errorf("invalid SERVER_BASE_URL: %w", err)
+	}
+
+	if parsedURL.Port() == "" {
+		parsedURL.Host = fmt.Sprintf("%s:%s", parsedURL.Hostname(), port)
+		server_base_url = parsedURL.String()
 	}
 
 	config := &Config{

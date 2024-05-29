@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/olunusib/go-ci/compare/v1.1.3...v1.2.0) (2024-05-29)
+
+
+### Features
+
+* support logs ([c115c8a](https://github.com/olunusib/go-ci/commit/c115c8a58fd7a6040c5c780d77804c6a309a8de9))
+
 ## [1.1.3](https://github.com/olunusib/go-ci/compare/v1.1.2...v1.1.3) (2024-05-29)
 
 

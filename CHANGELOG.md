@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/olunusib/go-ci/compare/v1.1.2...v1.1.3) (2024-05-29)
+
+
+### Bug Fixes
+
+* only build image on release ([8ede2fa](https://github.com/olunusib/go-ci/commit/8ede2fa3c8440910201bf26f323f59a72fb16418))
+
 ## [1.1.2](https://github.com/olunusib/go-ci/compare/v1.1.1...v1.1.2) (2024-05-29)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/olunusib/go-ci/compare/v1.4.0...v1.5.0) (2024-08-15)
+
+
+### Features
+
+* JSON ([10f0322](https://github.com/olunusib/go-ci/commit/10f0322aee65323d0fbc6aafaf3acb4d159f6267))
+
 ## [1.4.0](https://github.com/olunusib/go-ci/compare/v1.3.1...v1.4.0) (2024-08-15)
 
 

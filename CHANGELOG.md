@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/olunusib/go-ci/compare/v1.3.1...v1.4.0) (2024-08-15)
+
+
+### Features
+
+* add paths output ([178cb07](https://github.com/olunusib/go-ci/commit/178cb0795ef31241ff9b9b45e74f41da93a921ba))
+
 ## [1.3.1](https://github.com/olunusib/go-ci/compare/v1.3.0...v1.3.1) (2024-05-29)
 
 

@@ -18,6 +18,3 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           release-type: go
-      - if: ${{ steps.release_please.outputs.release_created }}
-        run: |
-          echo ${{ toJSON(steps.release_please.outputs) }}

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/olunusib/go-ci/compare/v1.5.0...v1.6.0) (2024-08-29)
+
+
+### Features
+
+* use multiwriter ([05fbec1](https://github.com/olunusib/go-ci/commit/05fbec1d200f9202a581f9c8124981ebdb1a8163))
+
 ## [1.5.0](https://github.com/olunusib/go-ci/compare/v1.4.0...v1.5.0) (2024-08-15)
 
 

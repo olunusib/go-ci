@@ -3,6 +3,7 @@ package ci
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -28,7 +29,8 @@ func ExecutePipeline(pipelineConfig *Config, runID string) (string, error) {
 	}
 	defer logFile.Close()
 
-	log.SetOutput(logFile)
+	multiWriter := io.MultiWriter(logFile, os.Stdout)
+	log.SetOutput(multiWriter)
 
 	log.Printf("Starting to work on: %s", pipelineConfig.Name)
 
